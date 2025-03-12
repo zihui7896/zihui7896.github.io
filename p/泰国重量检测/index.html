@@ -10,7 +10,7 @@
 <meta property='og:description' content="串口通讯 16进制发 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 public void sendMsg(string msg) { if (serialPort.IsOpen) { byte[] data = HexStringToByteArray(msg); serialPort.Write(data, 0, data.Length); string s = string.Empty; for (int i = 0; i &lt; data.Length; i ++) { s += data[i].ToString(); } // MachineException.CallException(ExceptionType.NormalInfo, &#34;data&#34;, s); } else { MessageBox.Show(&#34;串口未打开&#34;); } } public static byte[] HexStringToByteArray(string hex) { int length = hex.Length; if (length % 2 != 0) { throw new ArgumentException(&#34;十六进制字符串长度必须为偶数。&#34;); } byte[] bytes = new byte[length / 2]; for (int i = 0; i &lt; length; i += 2) { string hexPair = hex.Substring(i, 2); bytes[i / 2] = Convert.ToByte(hexPair, 16); } return bytes; } 16进制收 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 string _Data = string.Empty; public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; // 读取字节数据 int bytesToRead = sp.BytesToRead; byte[] buffer = new byte[bytesToRead]; sp.Read(buffer, 0, bytesToRead); string hexData = BitConverter.ToString(buffer).Replace(&#34;-&#34;, &#34;&#34;); //010304024E00009B9C _Data += hexData; MachineException.CallException(ExceptionType.NormalInfo, &#34;SerialPort Received Bytes&#34;, _Data); // 检测结束符 if (_Data.StartsWith(&#34;0103&#34;) &amp;&amp; _Data.Length == 18) // 根据需要变 { MachineException.CallException(ExceptionType.NormalInfo, &#34;_Data.EndsWith(\\&#34;0103\\&#34;) &amp;&amp; _Data.Length == 18&#34;, _Data); GlobalVariable.eReciveData = _Data; string show = _Data; _Data = string.Empty; } } 发字符 1 2 3 4 5 6 7 8 9 10 11 12 public void sendMsg(string msg) { if (serialPort.IsOpen) { byte[] date = System.Text.Encoding.UTF8.GetBytes(msg); serialPort.Write(date, 0, date.Length); } else { MessageBox.Show(&#34;串口未打开&#34;); } } 接收字符 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; string data = sp.ReadExisting(); //读取收到的数据 _Data += data; MachineException.CallException(ExceptionType.NormalInfo, &#34;SerialPort sp.ReadExisting()&#34;, _Data); if (_Data.EndsWith(&#34;\\r\\n&#34;)) { GlobalVariable.eReciveData = _Data; string show = data; //if (formProductMessage != null) //{ // formProductMessage.BeginInvoke(new Action(() =&gt; // { // formProductMessage.rtb_showMsg.AppendText(show + &#34;\\r\\n&#34;); // })); //} _Data = string.Empty; } } public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; string data = sp.ReadExisting(); //读取收到的数据 _eData += data; if (_eData.EndsWith(&#34;\\r\\n&#34;)) { GlobalVariable.eReciveData = _电流Data; if (GlobalVariable.isShow) this.ProgramForm.formDebug.rtb_Recived.AppendText(_eData); _eData = string.Empty; } if (GlobalVariable.isShow) this.ProgramForm.formDebug.rtb_Recived.AppendText(data); //listReciveDate.Add(date); //Console.WriteLine(date); } PortCommunication.cs 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 using NBVision.Shared; using System; using System.Collections.Generic; using System.IO.Ports; using System.Linq; using System.Text; using System.Threading.Tasks; using System.Windows.Forms; using NBVision.UI.UserUI; using Nobug2.Vision; using Nobug; namespace NBVision.Flow { public class PortCommunication { public Action&lt;string&gt; laserMsgDisplay; public string Description; public SerialPort serialPort; public Action&lt;string&gt; myAction; public string Port { get; set; } public FormProductMessage formProduct; public List&lt;string&gt; listReciveDate = new List&lt;string&gt;(); public string _hex_order = &#34;AA&#34;; // 通讯命令 public bool isSignal = false; // 默认无信号 public PortCommunication(string description, string port = &#34;COM5&#34;, int baudRate = 9600, Parity parity = Parity.Even, int dataBits = 8, StopBits stopBits = StopBits.One) { this.Description = description; this.Port = port; serialPort = new SerialPort(); serialPort.PortName = port; serialPort.BaudRate = baudRate; serialPort.Parity = parity; serialPort.DataBits = dataBits; serialPort.StopBits = stopBits; serialPort.ReadTimeout = 2000; //serialPort.DataReceived += ReciveMsg; // 全局里面 } public bool Open() { try { if (serialPort != null) { if (!serialPort.IsOpen) { serialPort.Open(); } } return true; } catch (Exception ex) { // MachineException.CallException(ExceptionType.NormalErr, &#34;&#34;, ex.Message); MessageBox.Show(&#34;测试仪器&#34; + ex.Message); return false; } } public void CloseComPort() { if (serialPort != null) { if (serialPort.IsOpen) { serialPort.Close(); } } } } } ">
 <meta property='og:url' content='https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/'>
 <meta property='og:site_name' content='zihui'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='C#' /><meta property='article:tag' content='Port通讯' /><meta property='article:published_time' content='2025-03-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-03-04T00:00:00&#43;00:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-03-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-03-04T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="泰国重量检测">
 <meta name="twitter:description" content="串口通讯 16进制发 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 public void sendMsg(string msg) { if (serialPort.IsOpen) { byte[] data = HexStringToByteArray(msg); serialPort.Write(data, 0, data.Length); string s = string.Empty; for (int i = 0; i &lt; data.Length; i ++) { s += data[i].ToString(); } // MachineException.CallException(ExceptionType.NormalInfo, &#34;data&#34;, s); } else { MessageBox.Show(&#34;串口未打开&#34;); } } public static byte[] HexStringToByteArray(string hex) { int length = hex.Length; if (length % 2 != 0) { throw new ArgumentException(&#34;十六进制字符串长度必须为偶数。&#34;); } byte[] bytes = new byte[length / 2]; for (int i = 0; i &lt; length; i += 2) { string hexPair = hex.Substring(i, 2); bytes[i / 2] = Convert.ToByte(hexPair, 16); } return bytes; } 16进制收 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 string _Data = string.Empty; public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; // 读取字节数据 int bytesToRead = sp.BytesToRead; byte[] buffer = new byte[bytesToRead]; sp.Read(buffer, 0, bytesToRead); string hexData = BitConverter.ToString(buffer).Replace(&#34;-&#34;, &#34;&#34;); //010304024E00009B9C _Data += hexData; MachineException.CallException(ExceptionType.NormalInfo, &#34;SerialPort Received Bytes&#34;, _Data); // 检测结束符 if (_Data.StartsWith(&#34;0103&#34;) &amp;&amp; _Data.Length == 18) // 根据需要变 { MachineException.CallException(ExceptionType.NormalInfo, &#34;_Data.EndsWith(\\&#34;0103\\&#34;) &amp;&amp; _Data.Length == 18&#34;, _Data); GlobalVariable.eReciveData = _Data; string show = _Data; _Data = string.Empty; } } 发字符 1 2 3 4 5 6 7 8 9 10 11 12 public void sendMsg(string msg) { if (serialPort.IsOpen) { byte[] date = System.Text.Encoding.UTF8.GetBytes(msg); serialPort.Write(date, 0, date.Length); } else { MessageBox.Show(&#34;串口未打开&#34;); } } 接收字符 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; string data = sp.ReadExisting(); //读取收到的数据 _Data += data; MachineException.CallException(ExceptionType.NormalInfo, &#34;SerialPort sp.ReadExisting()&#34;, _Data); if (_Data.EndsWith(&#34;\\r\\n&#34;)) { GlobalVariable.eReciveData = _Data; string show = data; //if (formProductMessage != null) //{ // formProductMessage.BeginInvoke(new Action(() =&gt; // { // formProductMessage.rtb_showMsg.AppendText(show + &#34;\\r\\n&#34;); // })); //} _Data = string.Empty; } } public void ReciveMsg(object sender, SerialDataReceivedEventArgs e) { SerialPort sp = (SerialPort)sender; string data = sp.ReadExisting(); //读取收到的数据 _eData += data; if (_eData.EndsWith(&#34;\\r\\n&#34;)) { GlobalVariable.eReciveData = _电流Data; if (GlobalVariable.isShow) this.ProgramForm.formDebug.rtb_Recived.AppendText(_eData); _eData = string.Empty; } if (GlobalVariable.isShow) this.ProgramForm.formDebug.rtb_Recived.AppendText(data); //listReciveDate.Add(date); //Console.WriteLine(date); } PortCommunication.cs 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 using NBVision.Shared; using System; using System.Collections.Generic; using System.IO.Ports; using System.Linq; using System.Text; using System.Threading.Tasks; using System.Windows.Forms; using NBVision.UI.UserUI; using Nobug2.Vision; using Nobug; namespace NBVision.Flow { public class PortCommunication { public Action&lt;string&gt; laserMsgDisplay; public string Description; public SerialPort serialPort; public Action&lt;string&gt; myAction; public string Port { get; set; } public FormProductMessage formProduct; public List&lt;string&gt; listReciveDate = new List&lt;string&gt;(); public string _hex_order = &#34;AA&#34;; // 通讯命令 public bool isSignal = false; // 默认无信号 public PortCommunication(string description, string port = &#34;COM5&#34;, int baudRate = 9600, Parity parity = Parity.Even, int dataBits = 8, StopBits stopBits = StopBits.One) { this.Description = description; this.Port = port; serialPort = new SerialPort(); serialPort.PortName = port; serialPort.BaudRate = baudRate; serialPort.Parity = parity; serialPort.DataBits = dataBits; serialPort.StopBits = stopBits; serialPort.ReadTimeout = 2000; //serialPort.DataReceived += ReciveMsg; // 全局里面 } public bool Open() { try { if (serialPort != null) { if (!serialPort.IsOpen) { serialPort.Open(); } } return true; } catch (Exception ex) { // MachineException.CallException(ExceptionType.NormalErr, &#34;&#34;, ex.Message); MessageBox.Show(&#34;测试仪器&#34; + ex.Message); return false; } } public void CloseComPort() { if (serialPort != null) { if (serialPort.IsOpen) { serialPort.Close(); } } } } } ">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -247,15 +247,15 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li>
+    <li><a href="#串口通讯">串口通讯</a>
       <ol>
-        <li>
-          <ol>
-            <li></li>
-          </ol>
-        </li>
+        <li><a href="#16进制发">16进制发</a></li>
+        <li><a href="#16进制收">16进制收</a></li>
+        <li><a href="#发字符">发字符</a></li>
+        <li><a href="#接收字符">接收字符</a></li>
       </ol>
     </li>
+    <li><a href="#portcommunicationcs">PortCommunication.cs</a></li>
   </ol>
 </nav>
         </div>
@@ -271,6 +271,18 @@
     <header class="article-header">
 
     <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/c%23/" >
+                C#
+            </a>
+        
+            <a href="/categories/port%E9%80%9A%E8%AE%AF/" >
+                Port通讯
+            </a>
+        
+    </header>
     
 
     <div class="article-title-wrapper">
@@ -313,9 +325,9 @@
     <section class="article-content">
     
     
-    <h5 id="串口通讯">串口通讯
-</h5><h6 id="16进制发">16进制发
-</h6><div class="highlight"><div class="chroma">
+    <h2 id="串口通讯">串口通讯
+</h2><h3 id="16进制发">16进制发
+</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -387,8 +399,8 @@
 </span></span><span class="line"><span class="cl"> <span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h6 id="16进制收">16进制收
-</h6><div class="highlight"><div class="chroma">
+</div><h3 id="16进制收">16进制收
+</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -446,8 +458,8 @@
 </span></span><span class="line"><span class="cl"> <span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h6 id="发字符">发字符
-</h6><div class="highlight"><div class="chroma">
+</div><h3 id="发字符">发字符
+</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -477,8 +489,8 @@
 </span></span><span class="line"><span class="cl"> <span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h6 id="接收字符">接收字符
-</h6><div class="highlight"><div class="chroma">
+</div><h3 id="接收字符">接收字符
+</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -570,8 +582,8 @@
 </span></span><span class="line"><span class="cl"> <span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h5 id="portcommunicationcs">PortCommunication.cs
-</h5><div class="highlight"><div class="chroma">
+</div><h2 id="portcommunicationcs">PortCommunication.cs
+</h2><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -735,8 +747,6 @@
 	srcset="/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250301122721_hu_2b1b3eb73ae3312b.png 480w, /p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250301122721_hu_a604cf0a24e3e9ea.png 1024w"
 	loading="lazy"
 	
-		alt="Photo by Helena Hertz on Unsplash"
-	
 	
 		class="gallery-image" 
 		data-flex-grow="169"
@@ -748,8 +758,6 @@
 	height="4096"
 	srcset="/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250304091918_hu_1b8e066f1c4febf1.jpg 480w, /p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250304091918_hu_975b785ddc15ba0d.jpg 1024w"
 	loading="lazy"
-	
-		alt="Photo by Helena Hertz on Unsplash"
 	
 	
 		class="gallery-image" 
@@ -763,14 +771,6 @@
 
     <footer class="article-footer">
     
-    <section class="article-tags">
-        
-            <a href="/tags/c%23/">C#</a>
-        
-            <a href="/tags/port%E9%80%9A%E8%AE%AF/">Port通讯</a>
-        
-    </section>
-
 
     </footer>
 

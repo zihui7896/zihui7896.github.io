@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>Port通讯 on zihui</title>
-        <link>https://zihui7896.github.io/tags/port%E9%80%9A%E8%AE%AF/</link>
-        <description>Recent content in Port通讯 on zihui</description>
+        <title>C# on zihui</title>
+        <link>https://zihui7896.github.io/categories/c%23/</link>
+        <description>Recent content in C# on zihui</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>zihui7896</copyright>
-        <lastBuildDate>Tue, 04 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://zihui7896.github.io/tags/port%E9%80%9A%E8%AE%AF/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 04 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://zihui7896.github.io/categories/c%23/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>泰国重量检测</title>
         <link>https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/</link>
         <pubDate>Tue, 04 Mar 2025 00:00:00 +0000</pubDate>
         
         <guid>https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/</guid>
-        <description>&lt;h5 id=&#34;串口通讯&#34;&gt;串口通讯
-&lt;/h5&gt;&lt;h6 id=&#34;16进制发&#34;&gt;16进制发
-&lt;/h6&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+        <description>&lt;h2 id=&#34;串口通讯&#34;&gt;串口通讯
+&lt;/h2&gt;&lt;h3 id=&#34;16进制发&#34;&gt;16进制发
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
@@ -87,8 +87,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h6 id=&#34;16进制收&#34;&gt;16进制收
-&lt;/h6&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;/div&gt;&lt;h3 id=&#34;16进制收&#34;&gt;16进制收
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
@@ -146,8 +146,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h6 id=&#34;发字符&#34;&gt;发字符
-&lt;/h6&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;/div&gt;&lt;h3 id=&#34;发字符&#34;&gt;发字符
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
@@ -177,8 +177,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h6 id=&#34;接收字符&#34;&gt;接收字符
-&lt;/h6&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;/div&gt;&lt;h3 id=&#34;接收字符&#34;&gt;接收字符
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
@@ -270,8 +270,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h5 id=&#34;portcommunicationcs&#34;&gt;PortCommunication.cs
-&lt;/h5&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;/div&gt;&lt;h2 id=&#34;portcommunicationcs&#34;&gt;PortCommunication.cs
+&lt;/h2&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
@@ -435,8 +435,6 @@
 	srcset=&#34;https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250301122721_hu_2b1b3eb73ae3312b.png 480w, https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250301122721_hu_a604cf0a24e3e9ea.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
-		alt=&#34;Photo by Helena Hertz on Unsplash&#34;
-	
 	
 		class=&#34;gallery-image&#34; 
 		data-flex-grow=&#34;169&#34;
@@ -448,8 +446,6 @@
 	height=&#34;4096&#34;
 	srcset=&#34;https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250304091918_hu_1b8e066f1c4febf1.jpg 480w, https://zihui7896.github.io/p/%E6%B3%B0%E5%9B%BD%E9%87%8D%E9%87%8F%E6%A3%80%E6%B5%8B/20250304091918_hu_975b785ddc15ba0d.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
-	
-		alt=&#34;Photo by Helena Hertz on Unsplash&#34;
 	
 	
 		class=&#34;gallery-image&#34; 
