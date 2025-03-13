@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="运行视觉流程 1 2 3 4 5 6 7 8 9 Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } job.BindImageWindow(this.formUserUI.newImage._display[0]); // 绑定到这个窗口 1 2 3 4 5 this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); // 显示 job.BindImageWindow(_userForm.formProductMessage.hWindow_Final3); job.ShowInterval = 1; 数据库 1 2 3 4 5 6 7 8 9 10 FormMain_Load #region 数据库连接 GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string errMsg = string.Empty; rtn = GlobalVariable.mysql.Connect(out errMsg); if (!rtn) { MessageBox.Show(&#34;数据库连接失败&#34;); } #endregion 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 private void tssl_连接数据库_Click(object sender, EventArgs e) { try { if (GlobalVariable.mysql != null &amp;&amp; GlobalVariable.mysql.isOpen) { GlobalVariable.mysql.Close(); } GlobalVariable.mysql._ip = GlobalVariable.CurrentSystemConfig._数据库IP; //GlobalVariable.mysql._ip = &#34;172.168.1.165&#34;; GlobalVariable.mysql._database = GlobalVariable.CurrentSystemConfig.数据库名称; //GlobalVariable.mysql._database = &#34;productdata&#34;; string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (rtn) { MessageBox.Show(&#34;数据库连接成功&#34;); } else { MessageBox.Show(&#34;数据库连接失败&#34; + ErrMsg); } }catch (Exception ex) { } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 GlobalVariable.cs public static MysqlHelper mysql; if (GlobalVariable.CurrentSystemConfig.PG110MES数据上传) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;数据库连接失败&#34;); goto Init; } else goto Init; } else { //存储数据 格式 ID S/N, ABI TD2 ResultTD StartTime,EndTime InsertHelper insert = new InsertHelper(); insert.tableName = GlobalVariable.CurrentSystemConfig.PG110MES数据上传表名; insert.L_InsertItem = new List&lt;InsertOrUpdateItem&gt;(); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;S/N&#34;, code)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ABI&#34;, signalNGOK)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;TD2&#34;, st_value.ToString())); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ResultTD&#34;, finalResult)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;StartTime&#34;, StartTime)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;EndTime&#34;, EndTime)); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Insert(insert, ref ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;PG110结果上传MES失败&#34;); goto Init; } MachineException.CallException(ExceptionType.NormalInfo, _description, &#34;点胶结果上传MES成功&#34;); } } public bool CodeJudge(string code, out string ErrMsg) { try { if (code.Length != GlobalVariable.CurrentProgramConfig.PG110条码长度) { ErrMsg = &#34;条码长度异常&#34;; return false; } re: if (!GlobalVariable.CurrentSystemConfig.PG110MES跳站检查) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg1 = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg1); if (!rtn) { MachineException.CallException(ExceptionType.NormalInfo, this._description, &#34;数据库连接失败&#34;); ErrMsg = &#34;数据库连接失败&#34;; return false; } else { goto re; } } else { QueryHelper queryHelper = new QueryHelper(); queryHelper.tableName = GlobalVariable.CurrentSystemConfig.PG110MES前站表名; queryHelper.L_SelectClounmName = new List&lt;string&gt;(); queryHelper.L_SelectClounmName.Add(&#34;HK7&#34;); queryHelper.L_SelectItem = new List&lt;SelectItem&gt;(); queryHelper.L_SelectItem.Add(new SelectItem(&#34;S/N&#34;, SelectRegion.等于, code)); string msg = string.Empty; List&lt;string&gt; result = new List&lt;string&gt;(); bool rtn = GlobalVariable.mysql.Query(queryHelper, out result, ref msg); if (!rtn) { ErrMsg = &#34;数据库查询异常&#34;; return false; } if (result.Count == 0) { ErrMsg = &#34;前站未检测&#34;; return false; } else { if (result[result.Count - 1] == &#34;false&#34;) { ErrMsg = &#34;前站未烘烤&#34;; return false; } else { ErrMsg = string.Empty; return true; } } } } else { ErrMsg = string.Empty; return true; } } catch (Exception ex) { ErrMsg = ex.ToString(); return false; } } RGB判断 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 public class zihuiFlow : Flow { private Axis _axis; public FormMain _formMain; private FormUserUI _userForm; private FormProgram _programForm; private FormNewVision _newVision; private Stopwatch sw = new Stopwatch(); // colorCheck.Add(&#34;Red&#34;, &#34;R:235-255 G:0-35 B:0-35&#34;); private static Dictionary&lt;string, string&gt; colorCheck = new Dictionary&lt;string, string&gt;() { { &#34;Red&#34;, &#34;235-255 0-35 0-35&#34;}, {&#34;Green&#34;, &#34;0-35 235-255 0-35&#34;}, {&#34;Blue&#34;, &#34;0-35 0-35 235-255&#34;}, {&#34;White&#34;, &#34;235-255 235-255 235-255&#34;}, { &#34;Black&#34;, &#34;0-35 0-35 0-35&#34; } }; public static string[] resultsJobstring = new string[] { &#34;Black&#34;, &#34;Red&#34;, &#34;Green&#34;, &#34;Blue&#34; , &#34;White&#34;}; //#region Property //private string _ProCode = &#34;&#34;; //private List&lt;Axis&gt; Axislist = new List&lt;Axis&gt; { GlobalVariable.cardControl._axis_X轴, GlobalVariable.cardControl._axis_Y轴 }; //private List&lt;double&gt; zeroList = new List&lt;double&gt; { 0,0 }; //public double _value; //public List&lt;object&gt; L_result = new List&lt;object&gt;(); //#endregion public zihuiFlow(FormUserUI userForm, FormProgram programForm) { _userForm = userForm; _programForm = programForm; } public bool testResult = false;//测试结果 public double result = 0;//测试值 public List&lt;Object&gt; L_resultContent = new List&lt;Object&gt;(); public override bool Init() { _statusCount = 0; return true; } #region Method public override void flowMethod() { try { while (true) { Init: if (_statusCount == 0) { Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } //job.BindImageWindow(this._userForm.newImage._display[0]); // 显示到界面 //job.ShowInterval = 6; this._userForm.newImage._display[0].HobjectToHimage(job.GetCurrentImage(), true); HObject image = job.GetCurrentImage(); List&lt;object&gt; L_result = job.Run(); if (L_result.Count == 5) { for (int i = 0; i &lt; L_result.Count; i++) { HObject imageresult = L_result[i] as HObject; bool stRGB = false; if (imageresult != null) { string st; colorCheck.TryGetValue(resultsJobstring[i], out st); string[] arr = st.Split(&#39; &#39;); int rmin = int.Parse(arr[0].Split(&#39;-&#39;)[0]); int rmax = int.Parse(arr[0].Split(&#39;-&#39;)[1]); int gmin = int.Parse(arr[1].Split(&#39;-&#39;)[0]); int gmax = int.Parse(arr[1].Split(&#39;-&#39;)[1]); int bmin = int.Parse(arr[2].Split(&#39;-&#39;)[0]); int bmax = int.Parse(arr[2].Split(&#39;-&#39;)[1]); stRGB = CheckRGB(imageresult, rmin, rmax, gmin, gmax, bmin, bmax); } MachineException.CallException(ExceptionType.FatalErr, &#34;判断结果&#34; + resultsJobstring[i], stRGB.ToString()); this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); } } //this.formUserUI.newImage._display[0].HobjectToHimage(image, true); _statusCount = 1; } if (_statusCount == 1) { Thread.Sleep(2000); _statusCount = 0; goto Init; } Thread.Sleep(10); } } catch (Exception ex) { MachineException.CallException(ExceptionType.NormalErr, &#34;警告&#34;, &#34;测试线程异常,请复位后再测试:&#34; + ex.ToString()); } } #endregion public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 // 判断一张图片的RGB 是不是在范围内 public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } 杂项 1 2 3 string ct = sw.ToString(); double Ct = 0; double.TryParse(ct, out Ct); ">
+<title>Nobug908</title>
+
+<link rel='canonical' href='https://zihui7896.github.io/p/nobug908/'>
+
+<link rel="stylesheet" href="/scss/style.min.b751a632d2ea4450598ff026554da38af1a7fba83d9e5bd995a625a1f31d5e93.css"><meta property='og:title' content="Nobug908">
+<meta property='og:description' content="运行视觉流程 1 2 3 4 5 6 7 8 9 Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } job.BindImageWindow(this.formUserUI.newImage._display[0]); // 绑定到这个窗口 1 2 3 4 5 this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); // 显示 job.BindImageWindow(_userForm.formProductMessage.hWindow_Final3); job.ShowInterval = 1; 数据库 1 2 3 4 5 6 7 8 9 10 FormMain_Load #region 数据库连接 GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string errMsg = string.Empty; rtn = GlobalVariable.mysql.Connect(out errMsg); if (!rtn) { MessageBox.Show(&#34;数据库连接失败&#34;); } #endregion 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 private void tssl_连接数据库_Click(object sender, EventArgs e) { try { if (GlobalVariable.mysql != null &amp;&amp; GlobalVariable.mysql.isOpen) { GlobalVariable.mysql.Close(); } GlobalVariable.mysql._ip = GlobalVariable.CurrentSystemConfig._数据库IP; //GlobalVariable.mysql._ip = &#34;172.168.1.165&#34;; GlobalVariable.mysql._database = GlobalVariable.CurrentSystemConfig.数据库名称; //GlobalVariable.mysql._database = &#34;productdata&#34;; string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (rtn) { MessageBox.Show(&#34;数据库连接成功&#34;); } else { MessageBox.Show(&#34;数据库连接失败&#34; + ErrMsg); } }catch (Exception ex) { } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 GlobalVariable.cs public static MysqlHelper mysql; if (GlobalVariable.CurrentSystemConfig.PG110MES数据上传) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;数据库连接失败&#34;); goto Init; } else goto Init; } else { //存储数据 格式 ID S/N, ABI TD2 ResultTD StartTime,EndTime InsertHelper insert = new InsertHelper(); insert.tableName = GlobalVariable.CurrentSystemConfig.PG110MES数据上传表名; insert.L_InsertItem = new List&lt;InsertOrUpdateItem&gt;(); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;S/N&#34;, code)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ABI&#34;, signalNGOK)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;TD2&#34;, st_value.ToString())); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ResultTD&#34;, finalResult)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;StartTime&#34;, StartTime)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;EndTime&#34;, EndTime)); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Insert(insert, ref ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;PG110结果上传MES失败&#34;); goto Init; } MachineException.CallException(ExceptionType.NormalInfo, _description, &#34;点胶结果上传MES成功&#34;); } } public bool CodeJudge(string code, out string ErrMsg) { try { if (code.Length != GlobalVariable.CurrentProgramConfig.PG110条码长度) { ErrMsg = &#34;条码长度异常&#34;; return false; } re: if (!GlobalVariable.CurrentSystemConfig.PG110MES跳站检查) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg1 = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg1); if (!rtn) { MachineException.CallException(ExceptionType.NormalInfo, this._description, &#34;数据库连接失败&#34;); ErrMsg = &#34;数据库连接失败&#34;; return false; } else { goto re; } } else { QueryHelper queryHelper = new QueryHelper(); queryHelper.tableName = GlobalVariable.CurrentSystemConfig.PG110MES前站表名; queryHelper.L_SelectClounmName = new List&lt;string&gt;(); queryHelper.L_SelectClounmName.Add(&#34;HK7&#34;); queryHelper.L_SelectItem = new List&lt;SelectItem&gt;(); queryHelper.L_SelectItem.Add(new SelectItem(&#34;S/N&#34;, SelectRegion.等于, code)); string msg = string.Empty; List&lt;string&gt; result = new List&lt;string&gt;(); bool rtn = GlobalVariable.mysql.Query(queryHelper, out result, ref msg); if (!rtn) { ErrMsg = &#34;数据库查询异常&#34;; return false; } if (result.Count == 0) { ErrMsg = &#34;前站未检测&#34;; return false; } else { if (result[result.Count - 1] == &#34;false&#34;) { ErrMsg = &#34;前站未烘烤&#34;; return false; } else { ErrMsg = string.Empty; return true; } } } } else { ErrMsg = string.Empty; return true; } } catch (Exception ex) { ErrMsg = ex.ToString(); return false; } } RGB判断 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 public class zihuiFlow : Flow { private Axis _axis; public FormMain _formMain; private FormUserUI _userForm; private FormProgram _programForm; private FormNewVision _newVision; private Stopwatch sw = new Stopwatch(); // colorCheck.Add(&#34;Red&#34;, &#34;R:235-255 G:0-35 B:0-35&#34;); private static Dictionary&lt;string, string&gt; colorCheck = new Dictionary&lt;string, string&gt;() { { &#34;Red&#34;, &#34;235-255 0-35 0-35&#34;}, {&#34;Green&#34;, &#34;0-35 235-255 0-35&#34;}, {&#34;Blue&#34;, &#34;0-35 0-35 235-255&#34;}, {&#34;White&#34;, &#34;235-255 235-255 235-255&#34;}, { &#34;Black&#34;, &#34;0-35 0-35 0-35&#34; } }; public static string[] resultsJobstring = new string[] { &#34;Black&#34;, &#34;Red&#34;, &#34;Green&#34;, &#34;Blue&#34; , &#34;White&#34;}; //#region Property //private string _ProCode = &#34;&#34;; //private List&lt;Axis&gt; Axislist = new List&lt;Axis&gt; { GlobalVariable.cardControl._axis_X轴, GlobalVariable.cardControl._axis_Y轴 }; //private List&lt;double&gt; zeroList = new List&lt;double&gt; { 0,0 }; //public double _value; //public List&lt;object&gt; L_result = new List&lt;object&gt;(); //#endregion public zihuiFlow(FormUserUI userForm, FormProgram programForm) { _userForm = userForm; _programForm = programForm; } public bool testResult = false;//测试结果 public double result = 0;//测试值 public List&lt;Object&gt; L_resultContent = new List&lt;Object&gt;(); public override bool Init() { _statusCount = 0; return true; } #region Method public override void flowMethod() { try { while (true) { Init: if (_statusCount == 0) { Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } //job.BindImageWindow(this._userForm.newImage._display[0]); // 显示到界面 //job.ShowInterval = 6; this._userForm.newImage._display[0].HobjectToHimage(job.GetCurrentImage(), true); HObject image = job.GetCurrentImage(); List&lt;object&gt; L_result = job.Run(); if (L_result.Count == 5) { for (int i = 0; i &lt; L_result.Count; i++) { HObject imageresult = L_result[i] as HObject; bool stRGB = false; if (imageresult != null) { string st; colorCheck.TryGetValue(resultsJobstring[i], out st); string[] arr = st.Split(&#39; &#39;); int rmin = int.Parse(arr[0].Split(&#39;-&#39;)[0]); int rmax = int.Parse(arr[0].Split(&#39;-&#39;)[1]); int gmin = int.Parse(arr[1].Split(&#39;-&#39;)[0]); int gmax = int.Parse(arr[1].Split(&#39;-&#39;)[1]); int bmin = int.Parse(arr[2].Split(&#39;-&#39;)[0]); int bmax = int.Parse(arr[2].Split(&#39;-&#39;)[1]); stRGB = CheckRGB(imageresult, rmin, rmax, gmin, gmax, bmin, bmax); } MachineException.CallException(ExceptionType.FatalErr, &#34;判断结果&#34; + resultsJobstring[i], stRGB.ToString()); this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); } } //this.formUserUI.newImage._display[0].HobjectToHimage(image, true); _statusCount = 1; } if (_statusCount == 1) { Thread.Sleep(2000); _statusCount = 0; goto Init; } Thread.Sleep(10); } } catch (Exception ex) { MachineException.CallException(ExceptionType.NormalErr, &#34;警告&#34;, &#34;测试线程异常,请复位后再测试:&#34; + ex.ToString()); } } #endregion public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 // 判断一张图片的RGB 是不是在范围内 public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } 杂项 1 2 3 string ct = sw.ToString(); double Ct = 0; double.TryParse(ct, out Ct); ">
+<meta property='og:url' content='https://zihui7896.github.io/p/nobug908/'>
+<meta property='og:site_name' content='zihui'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-03-13T11:36:31&#43;08:00'/><meta property='article:modified_time' content='2025-03-13T11:36:31&#43;08:00'/>
+<meta name="twitter:title" content="Nobug908">
+<meta name="twitter:description" content="运行视觉流程 1 2 3 4 5 6 7 8 9 Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } job.BindImageWindow(this.formUserUI.newImage._display[0]); // 绑定到这个窗口 1 2 3 4 5 this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); // 显示 job.BindImageWindow(_userForm.formProductMessage.hWindow_Final3); job.ShowInterval = 1; 数据库 1 2 3 4 5 6 7 8 9 10 FormMain_Load #region 数据库连接 GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string errMsg = string.Empty; rtn = GlobalVariable.mysql.Connect(out errMsg); if (!rtn) { MessageBox.Show(&#34;数据库连接失败&#34;); } #endregion 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 private void tssl_连接数据库_Click(object sender, EventArgs e) { try { if (GlobalVariable.mysql != null &amp;&amp; GlobalVariable.mysql.isOpen) { GlobalVariable.mysql.Close(); } GlobalVariable.mysql._ip = GlobalVariable.CurrentSystemConfig._数据库IP; //GlobalVariable.mysql._ip = &#34;172.168.1.165&#34;; GlobalVariable.mysql._database = GlobalVariable.CurrentSystemConfig.数据库名称; //GlobalVariable.mysql._database = &#34;productdata&#34;; string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (rtn) { MessageBox.Show(&#34;数据库连接成功&#34;); } else { MessageBox.Show(&#34;数据库连接失败&#34; + ErrMsg); } }catch (Exception ex) { } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 GlobalVariable.cs public static MysqlHelper mysql; if (GlobalVariable.CurrentSystemConfig.PG110MES数据上传) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;数据库连接失败&#34;); goto Init; } else goto Init; } else { //存储数据 格式 ID S/N, ABI TD2 ResultTD StartTime,EndTime InsertHelper insert = new InsertHelper(); insert.tableName = GlobalVariable.CurrentSystemConfig.PG110MES数据上传表名; insert.L_InsertItem = new List&lt;InsertOrUpdateItem&gt;(); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;S/N&#34;, code)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ABI&#34;, signalNGOK)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;TD2&#34;, st_value.ToString())); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;ResultTD&#34;, finalResult)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;StartTime&#34;, StartTime)); insert.L_InsertItem.Add(new InsertOrUpdateItem(&#34;EndTime&#34;, EndTime)); string ErrMsg = string.Empty; bool rtn = GlobalVariable.mysql.Insert(insert, ref ErrMsg); if (!rtn) { MachineException.CallException(ExceptionType.NormalErr, this._description, &#34;PG110结果上传MES失败&#34;); goto Init; } MachineException.CallException(ExceptionType.NormalInfo, _description, &#34;点胶结果上传MES成功&#34;); } } public bool CodeJudge(string code, out string ErrMsg) { try { if (code.Length != GlobalVariable.CurrentProgramConfig.PG110条码长度) { ErrMsg = &#34;条码长度异常&#34;; return false; } re: if (!GlobalVariable.CurrentSystemConfig.PG110MES跳站检查) { if (!GlobalVariable.mysql.isOpen) { GlobalVariable.mysql = new MysqlHelper(GlobalVariable.CurrentSystemConfig.数据库名称, GlobalVariable.CurrentSystemConfig.数据库IP, &#34;3306&#34;, &#34;root&#34;, &#34;root&#34;); string ErrMsg1 = string.Empty; bool rtn = GlobalVariable.mysql.Connect(out ErrMsg1); if (!rtn) { MachineException.CallException(ExceptionType.NormalInfo, this._description, &#34;数据库连接失败&#34;); ErrMsg = &#34;数据库连接失败&#34;; return false; } else { goto re; } } else { QueryHelper queryHelper = new QueryHelper(); queryHelper.tableName = GlobalVariable.CurrentSystemConfig.PG110MES前站表名; queryHelper.L_SelectClounmName = new List&lt;string&gt;(); queryHelper.L_SelectClounmName.Add(&#34;HK7&#34;); queryHelper.L_SelectItem = new List&lt;SelectItem&gt;(); queryHelper.L_SelectItem.Add(new SelectItem(&#34;S/N&#34;, SelectRegion.等于, code)); string msg = string.Empty; List&lt;string&gt; result = new List&lt;string&gt;(); bool rtn = GlobalVariable.mysql.Query(queryHelper, out result, ref msg); if (!rtn) { ErrMsg = &#34;数据库查询异常&#34;; return false; } if (result.Count == 0) { ErrMsg = &#34;前站未检测&#34;; return false; } else { if (result[result.Count - 1] == &#34;false&#34;) { ErrMsg = &#34;前站未烘烤&#34;; return false; } else { ErrMsg = string.Empty; return true; } } } } else { ErrMsg = string.Empty; return true; } } catch (Exception ex) { ErrMsg = ex.ToString(); return false; } } RGB判断 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 public class zihuiFlow : Flow { private Axis _axis; public FormMain _formMain; private FormUserUI _userForm; private FormProgram _programForm; private FormNewVision _newVision; private Stopwatch sw = new Stopwatch(); // colorCheck.Add(&#34;Red&#34;, &#34;R:235-255 G:0-35 B:0-35&#34;); private static Dictionary&lt;string, string&gt; colorCheck = new Dictionary&lt;string, string&gt;() { { &#34;Red&#34;, &#34;235-255 0-35 0-35&#34;}, {&#34;Green&#34;, &#34;0-35 235-255 0-35&#34;}, {&#34;Blue&#34;, &#34;0-35 0-35 235-255&#34;}, {&#34;White&#34;, &#34;235-255 235-255 235-255&#34;}, { &#34;Black&#34;, &#34;0-35 0-35 0-35&#34; } }; public static string[] resultsJobstring = new string[] { &#34;Black&#34;, &#34;Red&#34;, &#34;Green&#34;, &#34;Blue&#34; , &#34;White&#34;}; //#region Property //private string _ProCode = &#34;&#34;; //private List&lt;Axis&gt; Axislist = new List&lt;Axis&gt; { GlobalVariable.cardControl._axis_X轴, GlobalVariable.cardControl._axis_Y轴 }; //private List&lt;double&gt; zeroList = new List&lt;double&gt; { 0,0 }; //public double _value; //public List&lt;object&gt; L_result = new List&lt;object&gt;(); //#endregion public zihuiFlow(FormUserUI userForm, FormProgram programForm) { _userForm = userForm; _programForm = programForm; } public bool testResult = false;//测试结果 public double result = 0;//测试值 public List&lt;Object&gt; L_resultContent = new List&lt;Object&gt;(); public override bool Init() { _statusCount = 0; return true; } #region Method public override void flowMethod() { try { while (true) { Init: if (_statusCount == 0) { Job job = Job.FindJobByName(GlobalVariable.CurrentProgramConfig.视觉流程); if (job == null) { MachineException.CallException(ExceptionType.NormalErr, &#34;视觉流程&#34;, &#34;未获得视觉流程&#34;); CheckFlowCondition(); goto Init; } //job.BindImageWindow(this._userForm.newImage._display[0]); // 显示到界面 //job.ShowInterval = 6; this._userForm.newImage._display[0].HobjectToHimage(job.GetCurrentImage(), true); HObject image = job.GetCurrentImage(); List&lt;object&gt; L_result = job.Run(); if (L_result.Count == 5) { for (int i = 0; i &lt; L_result.Count; i++) { HObject imageresult = L_result[i] as HObject; bool stRGB = false; if (imageresult != null) { string st; colorCheck.TryGetValue(resultsJobstring[i], out st); string[] arr = st.Split(&#39; &#39;); int rmin = int.Parse(arr[0].Split(&#39;-&#39;)[0]); int rmax = int.Parse(arr[0].Split(&#39;-&#39;)[1]); int gmin = int.Parse(arr[1].Split(&#39;-&#39;)[0]); int gmax = int.Parse(arr[1].Split(&#39;-&#39;)[1]); int bmin = int.Parse(arr[2].Split(&#39;-&#39;)[0]); int bmax = int.Parse(arr[2].Split(&#39;-&#39;)[1]); stRGB = CheckRGB(imageresult, rmin, rmax, gmin, gmax, bmin, bmax); } MachineException.CallException(ExceptionType.FatalErr, &#34;判断结果&#34; + resultsJobstring[i], stRGB.ToString()); this._userForm.newImage._display[i + 1].HobjectToHimage(imageresult, true); } } //this.formUserUI.newImage._display[0].HobjectToHimage(image, true); _statusCount = 1; } if (_statusCount == 1) { Thread.Sleep(2000); _statusCount = 0; goto Init; } Thread.Sleep(10); } } catch (Exception ex) { MachineException.CallException(ExceptionType.NormalErr, &#34;警告&#34;, &#34;测试线程异常,请复位后再测试:&#34; + ex.ToString()); } } #endregion public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } } 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 // 判断一张图片的RGB 是不是在范围内 public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } 杂项 1 2 3 string ct = sw.ToString(); double Ct = 0; double.TryParse(ct, out Ct); ">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_53e3c2c95821ec58.png" width="300"
+                            height="232" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🙂</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">zihui</a></h1>
+            <h2 class="site-description">笔记</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/zihui7896'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E9%93%BE%E6%8E%A5/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>链接</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#运行视觉流程">运行视觉流程</a></li>
+    <li><a href="#数据库">数据库</a></li>
+    <li><a href="#rgb判断">RGB判断</a></li>
+    <li><a href="#杂项">杂项</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/nobug908/">Nobug908</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-03-13</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="运行视觉流程">运行视觉流程
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"> <span class="n">Job</span> <span class="n">job</span> <span class="p">=</span> <span class="n">Job</span><span class="p">.</span><span class="n">FindJobByName</span><span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentProgramConfig</span><span class="p">.</span><span class="err">视觉流程</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(</span><span class="n">job</span> <span class="p">==</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalErr</span><span class="p">,</span> <span class="s">&#34;视觉流程&#34;</span><span class="p">,</span> <span class="s">&#34;未获得视觉流程&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     <span class="n">CheckFlowCondition</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">     <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">job</span><span class="p">.</span><span class="n">BindImageWindow</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">formUserUI</span><span class="p">.</span><span class="n">newImage</span><span class="p">.</span><span class="n">_display</span><span class="p">[</span><span class="m">0</span><span class="p">]);</span> <span class="c1">// 绑定到这个窗口</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"><span class="k">this</span><span class="p">.</span><span class="n">_userForm</span><span class="p">.</span><span class="n">newImage</span><span class="p">.</span><span class="n">_display</span><span class="p">[</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">].</span><span class="n">HobjectToHimage</span><span class="p">(</span><span class="n">imageresult</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span> <span class="c1">// 显示</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="n">job</span><span class="p">.</span><span class="n">BindImageWindow</span><span class="p">(</span><span class="n">_userForm</span><span class="p">.</span><span class="n">formProductMessage</span><span class="p">.</span><span class="n">hWindow_Final3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="n">job</span><span class="p">.</span><span class="n">ShowInterval</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="数据库">数据库
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"><span class="n">FormMain_Load</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#region</span> <span class="err">数据库连接</span>
+</span></span><span class="line"><span class="cl"> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MysqlHelper</span><span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库名称</span><span class="p">,</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库</span><span class="n">IP</span><span class="p">,</span> <span class="s">&#34;3306&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="kt">string</span> <span class="n">errMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Connect</span><span class="p">(</span><span class="k">out</span> <span class="n">errMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="k">if</span> <span class="p">(!</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">MessageBox</span><span class="p">.</span><span class="n">Show</span><span class="p">(</span><span class="s">&#34;数据库连接失败&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="cp">#endregion</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"><span class="kd">private</span> <span class="k">void</span> <span class="n">tssl_连接数据库_Click</span><span class="p">(</span><span class="kt">object</span> <span class="n">sender</span><span class="p">,</span> <span class="n">EventArgs</span> <span class="n">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="k">try</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="k">if</span> <span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span> <span class="p">!=</span> <span class="kc">null</span> <span class="p">&amp;&amp;</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">isOpen</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">_ip</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="n">_数据库IP</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="c1">//GlobalVariable.mysql._ip = &#34;172.168.1.165&#34;;</span>
+</span></span><span class="line"><span class="cl">           <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">_database</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库名称</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="c1">//GlobalVariable.mysql._database = &#34;productdata&#34;;</span>
+</span></span><span class="line"><span class="cl">         <span class="kt">string</span> <span class="n">ErrMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="kt">bool</span> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Connect</span><span class="p">(</span><span class="k">out</span> <span class="n">ErrMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">         <span class="k">if</span> <span class="p">(</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">MessageBox</span><span class="p">.</span><span class="n">Show</span><span class="p">(</span><span class="s">&#34;数据库连接成功&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span> <span class="k">else</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">MessageBox</span><span class="p">.</span><span class="n">Show</span><span class="p">(</span><span class="s">&#34;数据库连接失败&#34;</span> <span class="p">+</span> <span class="n">ErrMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span><span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">cs</span>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">MysqlHelper</span> <span class="n">mysql</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="n">PG110MES数据上传</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(!</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">isOpen</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MysqlHelper</span><span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库名称</span><span class="p">,</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库</span><span class="n">IP</span><span class="p">,</span> <span class="s">&#34;3306&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">string</span> <span class="n">ErrMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">bool</span> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Connect</span><span class="p">(</span><span class="k">out</span> <span class="n">ErrMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(!</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalErr</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">_description</span><span class="p">,</span> <span class="s">&#34;数据库连接失败&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span>
+</span></span><span class="line"><span class="cl">            <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//存储数据   格式 ID S/N, ABI TD2 ResultTD StartTime,EndTime</span>
+</span></span><span class="line"><span class="cl">        <span class="n">InsertHelper</span> <span class="n">insert</span> <span class="p">=</span> <span class="k">new</span> <span class="n">InsertHelper</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">tableName</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="n">PG110MES数据上传表名</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">InsertOrUpdateItem</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;S/N&#34;</span><span class="p">,</span> <span class="n">code</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;ABI&#34;</span><span class="p">,</span> <span class="n">signalNGOK</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;TD2&#34;</span><span class="p">,</span> <span class="n">st_value</span><span class="p">.</span><span class="n">ToString</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;ResultTD&#34;</span><span class="p">,</span> <span class="n">finalResult</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;StartTime&#34;</span><span class="p">,</span> <span class="n">StartTime</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">insert</span><span class="p">.</span><span class="n">L_InsertItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">InsertOrUpdateItem</span><span class="p">(</span><span class="s">&#34;EndTime&#34;</span><span class="p">,</span> <span class="n">EndTime</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">string</span> <span class="n">ErrMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">bool</span> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Insert</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span> <span class="k">ref</span> <span class="n">ErrMsg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(!</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalErr</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">_description</span><span class="p">,</span> <span class="s">&#34;PG110结果上传MES失败&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalInfo</span><span class="p">,</span> <span class="n">_description</span><span class="p">,</span> <span class="s">&#34;点胶结果上传MES成功&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">bool</span> <span class="n">CodeJudge</span><span class="p">(</span><span class="kt">string</span> <span class="n">code</span><span class="p">,</span> <span class="k">out</span> <span class="kt">string</span> <span class="n">ErrMsg</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">code</span><span class="p">.</span><span class="n">Length</span> <span class="p">!=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentProgramConfig</span><span class="p">.</span><span class="n">PG110条码长度</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ErrMsg</span> <span class="p">=</span> <span class="s">&#34;条码长度异常&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">re</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(!</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="n">PG110MES跳站检查</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(!</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">isOpen</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MysqlHelper</span><span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库名称</span><span class="p">,</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="err">数据库</span><span class="n">IP</span><span class="p">,</span> <span class="s">&#34;3306&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">,</span> <span class="s">&#34;root&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">string</span> <span class="n">ErrMsg1</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">bool</span> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Connect</span><span class="p">(</span><span class="k">out</span> <span class="n">ErrMsg1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(!</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalInfo</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">_description</span><span class="p">,</span> <span class="s">&#34;数据库连接失败&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ErrMsg</span> <span class="p">=</span> <span class="s">&#34;数据库连接失败&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="k">else</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">goto</span> <span class="n">re</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">else</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">QueryHelper</span> <span class="n">queryHelper</span> <span class="p">=</span> <span class="k">new</span> <span class="n">QueryHelper</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">queryHelper</span><span class="p">.</span><span class="n">tableName</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentSystemConfig</span><span class="p">.</span><span class="n">PG110MES前站表名</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">queryHelper</span><span class="p">.</span><span class="n">L_SelectClounmName</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">queryHelper</span><span class="p">.</span><span class="n">L_SelectClounmName</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="s">&#34;HK7&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">queryHelper</span><span class="p">.</span><span class="n">L_SelectItem</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">SelectItem</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">queryHelper</span><span class="p">.</span><span class="n">L_SelectItem</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="k">new</span> <span class="n">SelectItem</span><span class="p">(</span><span class="s">&#34;S/N&#34;</span><span class="p">,</span> <span class="n">SelectRegion</span><span class="p">.</span><span class="err">等于</span><span class="p">,</span> <span class="n">code</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">string</span> <span class="n">msg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">List</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="n">result</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">bool</span> <span class="n">rtn</span> <span class="p">=</span> <span class="n">GlobalVariable</span><span class="p">.</span><span class="n">mysql</span><span class="p">.</span><span class="n">Query</span><span class="p">(</span><span class="n">queryHelper</span><span class="p">,</span> <span class="k">out</span> <span class="n">result</span><span class="p">,</span> <span class="k">ref</span> <span class="n">msg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(!</span><span class="n">rtn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ErrMsg</span> <span class="p">=</span> <span class="s">&#34;数据库查询异常&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">Count</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ErrMsg</span> <span class="p">=</span> <span class="s">&#34;前站未检测&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="k">else</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">result</span><span class="p">.</span><span class="n">Count</span> <span class="p">-</span> <span class="m">1</span><span class="p">]</span> <span class="p">==</span> <span class="s">&#34;false&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ErrMsg</span> <span class="p">=</span> <span class="s">&#34;前站未烘烤&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ErrMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ErrMsg</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ErrMsg</span> <span class="p">=</span> <span class="n">ex</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="rgb判断">RGB判断
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"> <span class="kd">public</span> <span class="k">class</span> <span class="nc">zihuiFlow</span> <span class="p">:</span> <span class="n">Flow</span>
+</span></span><span class="line"><span class="cl"> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="n">Axis</span> <span class="n">_axis</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="n">FormMain</span> <span class="n">_formMain</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="n">FormUserUI</span> <span class="n">_userForm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="n">FormProgram</span> <span class="n">_programForm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="n">FormNewVision</span> <span class="n">_newVision</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="n">Stopwatch</span> <span class="n">sw</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Stopwatch</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="c1">// colorCheck.Add(&#34;Red&#34;, &#34;R:235-255 G:0-35 B:0-35&#34;);</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">private</span> <span class="kd">static</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;</span> <span class="n">colorCheck</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="kt">string</span><span class="p">&gt;()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span> <span class="s">&#34;Red&#34;</span><span class="p">,</span> <span class="s">&#34;235-255 0-35 0-35&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span><span class="s">&#34;Green&#34;</span><span class="p">,</span> <span class="s">&#34;0-35 235-255 0-35&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">          <span class="p">{</span><span class="s">&#34;Blue&#34;</span><span class="p">,</span> <span class="s">&#34;0-35 0-35 235-255&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">          <span class="p">{</span><span class="s">&#34;White&#34;</span><span class="p">,</span> <span class="s">&#34;235-255 235-255 235-255&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">          <span class="p">{</span> <span class="s">&#34;Black&#34;</span><span class="p">,</span> <span class="s">&#34;0-35 0-35 0-35&#34;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">string</span><span class="p">[]</span> <span class="n">resultsJobstring</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span> <span class="s">&#34;Black&#34;</span><span class="p">,</span> <span class="s">&#34;Red&#34;</span><span class="p">,</span> <span class="s">&#34;Green&#34;</span><span class="p">,</span> <span class="s">&#34;Blue&#34;</span> <span class="p">,</span> <span class="s">&#34;White&#34;</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//#region Property</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//private string _ProCode = &#34;&#34;;</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//private List&lt;Axis&gt; Axislist = new List&lt;Axis&gt; { GlobalVariable.cardControl._axis_X轴, GlobalVariable.cardControl._axis_Y轴 };</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//private List&lt;double&gt; zeroList = new List&lt;double&gt; { 0,0 };</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//public double _value;</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//public List&lt;object&gt; L_result = new List&lt;object&gt;();</span>
+</span></span><span class="line"><span class="cl">     <span class="c1">//#endregion</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="n">zihuiFlow</span><span class="p">(</span><span class="n">FormUserUI</span> <span class="n">userForm</span><span class="p">,</span> <span class="n">FormProgram</span> <span class="n">programForm</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="n">_userForm</span> <span class="p">=</span> <span class="n">userForm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">_programForm</span> <span class="p">=</span> <span class="n">programForm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kt">bool</span> <span class="n">testResult</span> <span class="p">=</span> <span class="kc">false</span><span class="p">;</span><span class="c1">//测试结果</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kt">double</span> <span class="n">result</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span><span class="c1">//测试值</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Object</span><span class="p">&gt;</span> <span class="n">L_resultContent</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Object</span><span class="p">&gt;();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kd">override</span> <span class="kt">bool</span> <span class="n">Init</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="n">_statusCount</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="cp">#region</span> <span class="n">Method</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kd">override</span> <span class="k">void</span> <span class="n">flowMethod</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      
+</span></span><span class="line"><span class="cl">         <span class="k">try</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">Init</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">if</span> <span class="p">(</span><span class="n">_statusCount</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                 <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                   
+</span></span><span class="line"><span class="cl">                     <span class="n">Job</span> <span class="n">job</span> <span class="p">=</span> <span class="n">Job</span><span class="p">.</span><span class="n">FindJobByName</span><span class="p">(</span><span class="n">GlobalVariable</span><span class="p">.</span><span class="n">CurrentProgramConfig</span><span class="p">.</span><span class="err">视觉流程</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                     <span class="k">if</span> <span class="p">(</span><span class="n">job</span> <span class="p">==</span> <span class="kc">null</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                         <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalErr</span><span class="p">,</span> <span class="s">&#34;视觉流程&#34;</span><span class="p">,</span> <span class="s">&#34;未获得视觉流程&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                         <span class="n">CheckFlowCondition</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                         <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                     <span class="c1">//job.BindImageWindow(this._userForm.newImage._display[0]); // 显示到界面</span>
+</span></span><span class="line"><span class="cl">                     <span class="c1">//job.ShowInterval = 6;</span>
+</span></span><span class="line"><span class="cl">                     <span class="k">this</span><span class="p">.</span><span class="n">_userForm</span><span class="p">.</span><span class="n">newImage</span><span class="p">.</span><span class="n">_display</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">HobjectToHimage</span><span class="p">(</span><span class="n">job</span><span class="p">.</span><span class="n">GetCurrentImage</span><span class="p">(),</span> <span class="kc">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                     <span class="n">HObject</span> <span class="n">image</span> <span class="p">=</span> <span class="n">job</span><span class="p">.</span><span class="n">GetCurrentImage</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                     <span class="n">List</span><span class="p">&lt;</span><span class="kt">object</span><span class="p">&gt;</span> <span class="n">L_result</span> <span class="p">=</span> <span class="n">job</span><span class="p">.</span><span class="n">Run</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                     <span class="k">if</span> <span class="p">(</span><span class="n">L_result</span><span class="p">.</span><span class="n">Count</span> <span class="p">==</span> <span class="m">5</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                         <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">L_result</span><span class="p">.</span><span class="n">Count</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                             <span class="n">HObject</span> <span class="n">imageresult</span> <span class="p">=</span> <span class="n">L_result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">as</span> <span class="n">HObject</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                             <span class="kt">bool</span> <span class="n">stRGB</span> <span class="p">=</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                             <span class="k">if</span> <span class="p">(</span><span class="n">imageresult</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">string</span> <span class="n">st</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                                 <span class="n">colorCheck</span><span class="p">.</span><span class="n">TryGetValue</span><span class="p">(</span><span class="n">resultsJobstring</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="k">out</span> <span class="n">st</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                 <span class="kt">string</span><span class="p">[]</span> <span class="n">arr</span> <span class="p">=</span> <span class="n">st</span><span class="p">.</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39; &#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">rmin</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">rmax</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">gmin</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">1</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">gmax</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">1</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">bmin</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">2</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="kt">int</span> <span class="n">bmax</span> <span class="p">=</span> <span class="kt">int</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="m">2</span><span class="p">].</span><span class="n">Split</span><span class="p">(</span><span class="sc">&#39;-&#39;</span><span class="p">)[</span><span class="m">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                                 <span class="n">stRGB</span> <span class="p">=</span> <span class="n">CheckRGB</span><span class="p">(</span><span class="n">imageresult</span><span class="p">,</span> <span class="n">rmin</span><span class="p">,</span> <span class="n">rmax</span><span class="p">,</span> <span class="n">gmin</span><span class="p">,</span> <span class="n">gmax</span><span class="p">,</span> <span class="n">bmin</span><span class="p">,</span> <span class="n">bmax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                             <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">FatalErr</span><span class="p">,</span> <span class="s">&#34;判断结果&#34;</span> <span class="p">+</span> <span class="n">resultsJobstring</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">stRGB</span><span class="p">.</span><span class="n">ToString</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">                             <span class="k">this</span><span class="p">.</span><span class="n">_userForm</span><span class="p">.</span><span class="n">newImage</span><span class="p">.</span><span class="n">_display</span><span class="p">[</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">].</span><span class="n">HobjectToHimage</span><span class="p">(</span><span class="n">imageresult</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                     <span class="c1">//this.formUserUI.newImage._display[0].HobjectToHimage(image, true);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                     <span class="n">_statusCount</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                 <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">if</span> <span class="p">(</span><span class="n">_statusCount</span> <span class="p">==</span> <span class="m">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                 <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                     <span class="n">Thread</span><span class="p">.</span><span class="n">Sleep</span><span class="p">(</span><span class="m">2000</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                     <span class="n">_statusCount</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                     <span class="k">goto</span> <span class="n">Init</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                 <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">Thread</span><span class="p">.</span><span class="n">Sleep</span><span class="p">(</span><span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">MachineException</span><span class="p">.</span><span class="n">CallException</span><span class="p">(</span><span class="n">ExceptionType</span><span class="p">.</span><span class="n">NormalErr</span><span class="p">,</span> <span class="s">&#34;警告&#34;</span><span class="p">,</span> <span class="s">&#34;测试线程异常,请复位后再测试:&#34;</span> <span class="p">+</span> <span class="n">ex</span><span class="p">.</span><span class="n">ToString</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="cp">#endregion</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kt">bool</span> <span class="n">CheckRGB</span><span class="p">(</span><span class="n">HObject</span> <span class="n">image</span><span class="p">,</span><span class="kt">int</span> <span class="n">rMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">rMax</span><span class="p">,</span> <span class="kt">int</span> <span class="n">gMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">gMax</span><span class="p">,</span> <span class="kt">int</span> <span class="n">bMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">bMax</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">red</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">green</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">blue</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">redRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">greenRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">blueRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">tempRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">validRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="k">try</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 2. 检查是否为三通道图像</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">channels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">CountChannels</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">channels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="k">if</span> <span class="p">(</span><span class="n">channels</span><span class="p">.</span><span class="n">I</span> <span class="p">!=</span> <span class="m">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">throw</span> <span class="k">new</span> <span class="n">Exception</span><span class="p">(</span><span class="s">&#34;错误：图像不是RGB三通道格式！&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 3. 分解RGB通道</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Decompose3</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">red</span><span class="p">,</span> <span class="k">out</span> <span class="n">green</span><span class="p">,</span> <span class="k">out</span> <span class="n">blue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 4. 对各通道进行阈值分割</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">red</span><span class="p">,</span> <span class="k">out</span> <span class="n">redRegion</span><span class="p">,</span> <span class="n">rMin</span><span class="p">,</span> <span class="n">rMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="k">out</span> <span class="n">greenRegion</span><span class="p">,</span> <span class="n">gMin</span><span class="p">,</span> <span class="n">gMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">blue</span><span class="p">,</span> <span class="k">out</span> <span class="n">blueRegion</span><span class="p">,</span> <span class="n">bMin</span><span class="p">,</span> <span class="n">bMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 5. 计算三个通道的交集</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Intersection</span><span class="p">(</span><span class="n">redRegion</span><span class="p">,</span> <span class="n">greenRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">tempRegion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Intersection</span><span class="p">(</span><span class="n">tempRegion</span><span class="p">,</span> <span class="n">blueRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">validRegion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 6. 计算有效区域像素数</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">areaValid</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">AreaCenter</span><span class="p">(</span><span class="n">validRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">areaValid</span><span class="p">,</span> <span class="k">out</span> <span class="n">row</span><span class="p">,</span> <span class="k">out</span> <span class="n">col</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 7. 获取总像素数</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">GetImageSize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">width</span><span class="p">,</span> <span class="k">out</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="kt">long</span> <span class="n">totalPixels</span> <span class="p">=</span> <span class="n">width</span> <span class="p">*</span> <span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 8. 判断结果</span>
+</span></span><span class="line"><span class="cl">             <span class="k">if</span> <span class="p">(</span><span class="n">areaValid</span><span class="p">.</span><span class="n">L</span> <span class="p">==</span> <span class="n">totalPixels</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">             <span class="k">else</span>
+</span></span><span class="line"><span class="cl">             <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="kt">double</span> <span class="n">ratio</span> <span class="p">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">areaValid</span><span class="p">.</span><span class="n">D</span> <span class="p">/</span> <span class="n">totalPixels</span> <span class="p">*</span> <span class="m">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="k">catch</span> <span class="p">(</span><span class="n">HalconException</span> <span class="n">hex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&#34;Halcon异常: {hex.Message}&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="k">finally</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="c1">// 释放所有Halcon对象</span>
+</span></span><span class="line"><span class="cl">             <span class="n">red</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">green</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">blue</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">redRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">greenRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">blueRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">tempRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">validRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"><span class="c1">// 判断一张图片的RGB 是不是在范围内</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">bool</span> <span class="n">CheckRGB</span><span class="p">(</span><span class="n">HObject</span> <span class="n">image</span><span class="p">,</span><span class="kt">int</span> <span class="n">rMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">rMax</span><span class="p">,</span> <span class="kt">int</span> <span class="n">gMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">gMax</span><span class="p">,</span> <span class="kt">int</span> <span class="n">bMin</span><span class="p">,</span> <span class="kt">int</span> <span class="n">bMax</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">red</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">green</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">blue</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">redRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">greenRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">blueRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">HObject</span> <span class="n">tempRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">,</span> <span class="n">validRegion</span> <span class="p">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="k">try</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 2. 检查是否为三通道图像</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">channels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">CountChannels</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">channels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="k">if</span> <span class="p">(</span><span class="n">channels</span><span class="p">.</span><span class="n">I</span> <span class="p">!=</span> <span class="m">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">throw</span> <span class="k">new</span> <span class="n">Exception</span><span class="p">(</span><span class="s">&#34;错误：图像不是RGB三通道格式！&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 3. 分解RGB通道</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Decompose3</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">red</span><span class="p">,</span> <span class="k">out</span> <span class="n">green</span><span class="p">,</span> <span class="k">out</span> <span class="n">blue</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 4. 对各通道进行阈值分割</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">red</span><span class="p">,</span> <span class="k">out</span> <span class="n">redRegion</span><span class="p">,</span> <span class="n">rMin</span><span class="p">,</span> <span class="n">rMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">green</span><span class="p">,</span> <span class="k">out</span> <span class="n">greenRegion</span><span class="p">,</span> <span class="n">gMin</span><span class="p">,</span> <span class="n">gMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Threshold</span><span class="p">(</span><span class="n">blue</span><span class="p">,</span> <span class="k">out</span> <span class="n">blueRegion</span><span class="p">,</span> <span class="n">bMin</span><span class="p">,</span> <span class="n">bMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 5. 计算三个通道的交集</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Intersection</span><span class="p">(</span><span class="n">redRegion</span><span class="p">,</span> <span class="n">greenRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">tempRegion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">Intersection</span><span class="p">(</span><span class="n">tempRegion</span><span class="p">,</span> <span class="n">blueRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">validRegion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 6. 计算有效区域像素数</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">areaValid</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">AreaCenter</span><span class="p">(</span><span class="n">validRegion</span><span class="p">,</span> <span class="k">out</span> <span class="n">areaValid</span><span class="p">,</span> <span class="k">out</span> <span class="n">row</span><span class="p">,</span> <span class="k">out</span> <span class="n">col</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 7. 获取总像素数</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HTuple</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="n">HOperatorSet</span><span class="p">.</span><span class="n">GetImageSize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="k">out</span> <span class="n">width</span><span class="p">,</span> <span class="k">out</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="kt">long</span> <span class="n">totalPixels</span> <span class="p">=</span> <span class="n">width</span> <span class="p">*</span> <span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">             <span class="c1">// 8. 判断结果</span>
+</span></span><span class="line"><span class="cl">             <span class="k">if</span> <span class="p">(</span><span class="n">areaValid</span><span class="p">.</span><span class="n">L</span> <span class="p">==</span> <span class="n">totalPixels</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">             <span class="k">else</span>
+</span></span><span class="line"><span class="cl">             <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="kt">double</span> <span class="n">ratio</span> <span class="p">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">areaValid</span><span class="p">.</span><span class="n">D</span> <span class="p">/</span> <span class="n">totalPixels</span> <span class="p">*</span> <span class="m">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="k">catch</span> <span class="p">(</span><span class="n">HalconException</span> <span class="n">hex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&#34;Halcon异常: {hex.Message}&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">             <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="k">finally</span>
+</span></span><span class="line"><span class="cl">         <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="c1">// 释放所有Halcon对象</span>
+</span></span><span class="line"><span class="cl">             <span class="n">red</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">green</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">blue</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">redRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">greenRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">blueRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">tempRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">             <span class="n">validRegion</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="杂项">杂项
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c#" data-lang="c#"><span class="line"><span class="cl"> <span class="kt">string</span> <span class="n">ct</span> <span class="p">=</span> <span class="n">sw</span><span class="p">.</span><span class="n">ToString</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"> <span class="kt">double</span> <span class="n">Ct</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="kt">double</span><span class="p">.</span><span class="n">TryParse</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="k">out</span> <span class="n">Ct</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 zihui7896
+    </section>
+    
+    <section class="powerby">
+        
+            每个摆一摆，生活多姿彩 <br/>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+<style>
+    #backTopBtn {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        z-index: 99;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        background-image: url(https://zihui7896.github.io/icons/backTop.svg);
+    }
+    body {
+      background: url(https://zihui7896.github.io/background/background.png) no-repeat center top;
+      background-size: cover;
+      background-attachment: fixed;
+	}
+</style>
+
+</style>
+
+<script src=https://zihui7896.github.io/background/sakura.js></script>
+
+
+<script>
+
+    
+
+    function initScrollTop() {
+        let rightSideBar = document.querySelector(".right-sidebar");
+        if (!rightSideBar) {
+            return;
+        }
+        
+        let btn = document.createElement("div");
+        btn.id = "backTopBtn";
+        btn.onclick = backToTop
+        rightSideBar.appendChild(btn)
+        
+        window.onscroll = function() {
+            
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                btn.style.display = "block";
+            } else {
+                btn.style.display = "none";
+            }
+        };
+    }
+
+    
+
+    function backToTop(){
+        window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+
+    initScrollTop();
+</script>
+
+    </body>
+</html>
