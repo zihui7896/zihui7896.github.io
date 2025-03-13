@@ -6,11 +6,11 @@
 
 <link rel='canonical' href='https://zihui7896.github.io/categories/test/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Category: Test - zihui">
+<link rel="stylesheet" href="/scss/style.min.b751a632d2ea4450598ff026554da38af1a7fba83d9e5bd995a625a1f31d5e93.css"><meta property='og:title' content="Category: Test - zihui">
 <meta property='og:description' content="This is an example category">
 <meta property='og:url' content='https://zihui7896.github.io/categories/test/'>
 <meta property='og:site_name' content='zihui'>
-<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2025-03-12T16:01:56&#43;08:00 '/><meta property='og:image' content='https://zihui7896.github.io/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg' />
+<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2025-03-05T00:00:00&#43;00:00 '/><meta property='og:image' content='https://zihui7896.github.io/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg' />
 <meta name="twitter:title" content="Category: Test - zihui">
 <meta name="twitter:description" content="This is an example category"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://zihui7896.github.io/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg' /><link rel="alternate" type="application/rss&#43;xml" href="https://zihui7896.github.io/categories/test/index.xml">
@@ -312,12 +312,12 @@
 
     <div class="tagCloud-tags">
         
-            <a href="/categories/test/" class="font_size_3">
-                Test
+            <a href="/categories/c%23/" class="font_size_3">
+                C#
             </a>
         
-            <a href="/categories/c%23/" class="font_size_1">
-                C#
+            <a href="/categories/test/" class="font_size_3">
+                Test
             </a>
         
             <a href="/categories/port%E9%80%9A%E8%AE%AF/" class="font_size_1">
@@ -334,6 +334,10 @@
         
             <a href="/categories/themes/" class="font_size_1">
                 Themes
+            </a>
+        
+            <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" class="font_size_1">
+                多线程
             </a>
         
             <a href="/categories/%E6%B5%8B%E8%AF%95/" class="font_size_1">
@@ -473,6 +477,62 @@
 
         document.head.appendChild(customFont);
     }());
+</script>
+<style>
+    #backTopBtn {
+        display: none;
+        position: fixed;
+        bottom: 30px;
+        z-index: 99;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        background-image: url(https://zihui7896.github.io/icons/backTop.svg);
+    }
+    body {
+      background: url(https://zihui7896.github.io/background/background.png) no-repeat center top;
+      background-size: cover;
+      background-attachment: fixed;
+	}
+</style>
+
+</style>
+
+<script src=https://zihui7896.github.io/background/sakura.js></script>
+
+
+<script>
+
+    
+
+    function initScrollTop() {
+        let rightSideBar = document.querySelector(".right-sidebar");
+        if (!rightSideBar) {
+            return;
+        }
+        
+        let btn = document.createElement("div");
+        btn.id = "backTopBtn";
+        btn.onclick = backToTop
+        rightSideBar.appendChild(btn)
+        
+        window.onscroll = function() {
+            
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                btn.style.display = "block";
+            } else {
+                btn.style.display = "none";
+            }
+        };
+    }
+
+    
+
+    function backToTop(){
+        window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+
+    initScrollTop();
 </script>
 
     </body>
