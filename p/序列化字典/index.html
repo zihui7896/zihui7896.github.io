@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='https://zihui7896.github.io/p/%E5%BA%8F%E5%88%97%E5%8C%96%E5%AD%97%E5%85%B8/'>
 
-<link rel="stylesheet" href="/scss/style.min.b751a632d2ea4450598ff026554da38af1a7fba83d9e5bd995a625a1f31d5e93.css"><meta property='og:title' content="序列化字典">
+<link rel="stylesheet" href="/scss/style.min.a2ab0eca24729051767c9d2fb766cfdce7af576c0f1f52abfe69a4ce15d77903.css"><meta property='og:title' content="序列化字典">
 <meta property='og:description' content=" 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 #region xml 保存路径 private string xmlSavePath = @&#34;D:\\\\Config.xml&#34;; [Category(&#34;XML保存路径&#34;)] public string _xmlSavePath { get { return xmlSavePath; } set { xmlSavePath = value; } } #endregion public void Load() { try { Dictionary&lt;string, string&gt; dic = SerializeXmlSwitch.JsonDeserialize&lt;Dictionary&lt;string, string&gt;&gt;(SerializeXmlSwitch.DeserializeFromXml&lt;String&gt;(xmlSavePath)); _条码枪端口 = dic[&#34;_条码枪端口&#34;]; _检测仪器 = dic[&#34;_检测仪器&#34;]; _time_Interval = double.Parse(dic[&#34;_time_Interval&#34;]); _products_weight_Max = double.Parse(dic[&#34;_products_weight_Max&#34;]); _products_weight_Min = double.Parse(dic[&#34;_products_weight_Min&#34;]); } catch (Exception ex) { return; } } // 将值保存到指定文件内 public void Save(Dictionary&lt;string, string&gt; data) { if (!File.Exists(xmlSavePath)) { File.Create(xmlSavePath).Dispose(); } SerializeXmlSwitch.SerializeToXml(xmlSavePath, SerializeXmlSwitch.JsonSerializer(data)); } ">
 <meta property='og:url' content='https://zihui7896.github.io/p/%E5%BA%8F%E5%88%97%E5%8C%96%E5%AD%97%E5%85%B8/'>
 <meta property='og:site_name' content='zihui'>
