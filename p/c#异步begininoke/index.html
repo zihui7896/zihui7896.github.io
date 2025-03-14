@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='https://zihui7896.github.io/p/c%23%E5%BC%82%E6%AD%A5begininoke/'>
 
-<link rel="stylesheet" href="/scss/style.min.a2ab0eca24729051767c9d2fb766cfdce7af576c0f1f52abfe69a4ce15d77903.css"><meta property='og:title' content="C#异步BeginInoke">
+<link rel="stylesheet" href="/scss/style.min.c8f7fefff43a36588f3ed93afbe93f390f5e413cd4696441ca17d7af637b498b.css"><meta property='og:title' content="C#异步BeginInoke">
 <meta property='og:description' content=" 1 2 3 4 5 6 7 8 this.Invoke()的作用与用法、不阻塞UI界面线程的延时函数 Invoke 与begininvoke区别在于，invoke会阻塞当前线程，直到invoke调用结束，才会继续执行下去，而begininvoke 则可以异步进行调用，也就是该方法封送完毕后马上返回，不会等待委托方法的执行结束，调用者线程将不会被阻塞。但是调用者也可以使用EndInvoke方法或者其它类似 WaitHandle机制等待异步操作的完成。 如果你的后台线程在更新一个UI控件的状态后不需要等待，而是要继续往下处理，那么你就应该使用BeginInvoke来进行异步处理。 如果你的后台线程需要操作UI控件，并且需要等到该操作执行完毕才能继续执行，那么你就应该使用Invoke。 EventHandler即事件委托，表示用于处理不具有事件数据的事件的方法。 代码：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 this._formMain.UserUIForm.formProductMessage.BeginInvoke(new Action(() =&gt; { this._formMain.UserUIForm.formProductMessage.lb_90_2Code.Text = _programDate.Load; this._formMain.UserUIForm.formProductMessage.lb_90_2Code2.Text = _programDate.UnLoad; this._formMain.UserUIForm.formProductMessage.lb_90_2CodeResult.Text = &#34;1&#34;; this._formMain.UserUIForm.formProductMessage.lb_90_2CodeResult2.Text = &#34;1&#34;; })); this.BeginInvoke(new Action(() =&gt; { this.weight_label.Text = s; })); this.formMain.UserUIForm.BeginInvoke(new Action(() =&gt; { formMain.UserUIForm.formProductMessage.btn_status.Text = &#34;相机处理中...&#34;; formMain.UserUIForm.formProductMessage.btn_status.BackColor = System.Drawing.Color.White; })); ">
 <meta property='og:url' content='https://zihui7896.github.io/p/c%23%E5%BC%82%E6%AD%A5begininoke/'>
 <meta property='og:site_name' content='zihui'>
@@ -58,8 +58,8 @@
                     
                     
                         
-                        <img src="/img/avatar_hu_53e3c2c95821ec58.png" width="300"
-                            height="232" class="site-logo" loading="lazy" alt="Avatar">
+                        <img src="/img/avatar_hu_a554ba2fcdab7ac2.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
                 </a>
