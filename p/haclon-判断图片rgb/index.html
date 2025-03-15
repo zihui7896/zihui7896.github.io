@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='https://zihui7896.github.io/p/haclon-%E5%88%A4%E6%96%AD%E5%9B%BE%E7%89%87rgb/'>
 
-<link rel="stylesheet" href="/scss/style.min.c8f7fefff43a36588f3ed93afbe93f390f5e413cd4696441ca17d7af637b498b.css"><meta property='og:title' content="Haclon 判断图片RGB">
+<link rel="stylesheet" href="/scss/style.min.a64a6130cf1890ceeb730cad5d3bb1cb6473f35788bca9443a24d0e96a9029b8.css"><meta property='og:title' content="Haclon 判断图片RGB">
 <meta property='og:description' content="判断一张图片的RGB 是不是在范围内 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 // 判断一张图片的RGB 是不是在范围内 public bool CheckRGB(HObject image,int rMin, int rMax, int gMin, int gMax, int bMin, int bMax) { HObject red = null, green = null, blue = null; HObject redRegion = null, greenRegion = null, blueRegion = null; HObject tempRegion = null, validRegion = null; try { // 2. 检查是否为三通道图像 HTuple channels; HOperatorSet.CountChannels(image, out channels); if (channels.I != 3) throw new Exception(&#34;错误：图像不是RGB三通道格式！&#34;); // 3. 分解RGB通道 HOperatorSet.Decompose3(image, out red, out green, out blue); // 4. 对各通道进行阈值分割 HOperatorSet.Threshold(red, out redRegion, rMin, rMax); HOperatorSet.Threshold(green, out greenRegion, gMin, gMax); HOperatorSet.Threshold(blue, out blueRegion, bMin, bMax); // 5. 计算三个通道的交集 HOperatorSet.Intersection(redRegion, greenRegion, out tempRegion); HOperatorSet.Intersection(tempRegion, blueRegion, out validRegion); // 6. 计算有效区域像素数 HTuple areaValid, row, col; HOperatorSet.AreaCenter(validRegion, out areaValid, out row, out col); // 7. 获取总像素数 HTuple width, height; HOperatorSet.GetImageSize(image, out width, out height); long totalPixels = width * height; // 8. 判断结果 if (areaValid.L == totalPixels) { return true; } else { double ratio = (double)areaValid.D / totalPixels * 100; return false; } } catch (HalconException hex) { Console.WriteLine($&#34;Halcon异常: {hex.Message}&#34;); return false; } finally { // 释放所有Halcon对象 red.Dispose(); green.Dispose(); blue.Dispose(); redRegion.Dispose(); greenRegion.Dispose(); blueRegion.Dispose(); tempRegion.Dispose(); validRegion.Dispose(); } } ">
 <meta property='og:url' content='https://zihui7896.github.io/p/haclon-%E5%88%A4%E6%96%AD%E5%9B%BE%E7%89%87rgb/'>
 <meta property='og:site_name' content='zihui'>
@@ -745,6 +745,71 @@
 
     initScrollTop();
 </script>
+
+
+<div id="aplayer"></div>
+<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+
+<script>
+const staticDir = "https://zihui7896.github.io/"
+const ap = new APlayer({
+    container: document.getElementById('aplayer'),
+    lrcType: 3,
+	fixed: true,
+    audio: [
+	    {
+            
+            name: 'RainafterSummer',
+            artist: '羽肿',
+            url: staticDir + '//music//RainafterSummer//' +  'RainafterSummer.mp3',
+            cover: staticDir + '//music//RainafterSummer//' + 'cover.jpg',
+            lrc: staticDir + 'lrc.lrc',
+        },
+		{
+            
+            name: 'RainafterSummer',
+            artist: '羽肿',
+            url: staticDir + '//music//RainafterSummer//' +  'RainafterSummer.mp3',
+            cover: staticDir + '//music//RainafterSummer//' + 'cover.jpg',
+            lrc: staticDir + 'lrc.lrc',
+        },
+    ]
+	
+});
+
+
+    window.onbeforeunload = () => {
+        
+        const playInfo = {
+            index: ap.list.index,
+            currentTime: ap.audio.currentTime,
+            paused: ap.paused
+        };
+        localStorage.setItem("playInfo", JSON.stringify(playInfo));
+    };
+
+    
+
+    window.onload = () => {
+        
+        const playInfo = JSON.parse(localStorage.getItem("playInfo"));
+        if (!playInfo) {
+            return;
+        }
+        
+        ap.list.switch(playInfo.index);
+        
+        setTimeout(() => {
+            
+            ap.seek(playInfo.currentTime);
+            
+            if (!playInfo.paused) {
+                ap.play()
+            }
+        }, 500);
+    };
+</script>
+
 
     </body>
 </html>

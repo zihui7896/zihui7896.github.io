@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='https://zihui7896.github.io/post/'>
 
-<link rel="stylesheet" href="/scss/style.min.c8f7fefff43a36588f3ed93afbe93f390f5e413cd4696441ca17d7af637b498b.css"><meta property='og:title' content="Posts">
+<link rel="stylesheet" href="/scss/style.min.a64a6130cf1890ceeb730cad5d3bb1cb6473f35788bca9443a24d0e96a9029b8.css"><meta property='og:title' content="Posts">
 <meta property='og:description' content="笔记">
 <meta property='og:url' content='https://zihui7896.github.io/post/'>
 <meta property='og:site_name' content='zihui'>
@@ -343,26 +343,6 @@
 
             
         
-            
-                <section class="widget tagCloud">
-    <div class="widget-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-tag" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M11 3L20 12a1.5 1.5 0 0 1 0 2L14 20a1.5 1.5 0 0 1 -2 0L3 11v-4a4 4 0 0 1 4 -4h4" />
-  <circle cx="9" cy="9" r="2" />
-</svg>
-
-
-
-    </div>
-    <h2 class="widget-title section-title">标签云</h2>
-
-    <div class="tagCloud-tags">
-        
-    </div>
-</section>
-            
-        
     </aside>
 
 
@@ -586,6 +566,71 @@
 
     initScrollTop();
 </script>
+
+
+<div id="aplayer"></div>
+<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+
+<script>
+const staticDir = "https://zihui7896.github.io/"
+const ap = new APlayer({
+    container: document.getElementById('aplayer'),
+    lrcType: 3,
+	fixed: true,
+    audio: [
+	    {
+            
+            name: 'RainafterSummer',
+            artist: '羽肿',
+            url: staticDir + '//music//RainafterSummer//' +  'RainafterSummer.mp3',
+            cover: staticDir + '//music//RainafterSummer//' + 'cover.jpg',
+            lrc: staticDir + 'lrc.lrc',
+        },
+		{
+            
+            name: 'RainafterSummer',
+            artist: '羽肿',
+            url: staticDir + '//music//RainafterSummer//' +  'RainafterSummer.mp3',
+            cover: staticDir + '//music//RainafterSummer//' + 'cover.jpg',
+            lrc: staticDir + 'lrc.lrc',
+        },
+    ]
+	
+});
+
+
+    window.onbeforeunload = () => {
+        
+        const playInfo = {
+            index: ap.list.index,
+            currentTime: ap.audio.currentTime,
+            paused: ap.paused
+        };
+        localStorage.setItem("playInfo", JSON.stringify(playInfo));
+    };
+
+    
+
+    window.onload = () => {
+        
+        const playInfo = JSON.parse(localStorage.getItem("playInfo"));
+        if (!playInfo) {
+            return;
+        }
+        
+        ap.list.switch(playInfo.index);
+        
+        setTimeout(() => {
+            
+            ap.seek(playInfo.currentTime);
+            
+            if (!playInfo.paused) {
+                ap.play()
+            }
+        }, 500);
+    };
+</script>
+
 
     </body>
 </html>
