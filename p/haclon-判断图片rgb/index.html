@@ -707,7 +707,32 @@
 	}
 </style>
 
-</style>
+
+
+
+    
+    <script src=https://zihui7896.github.io/js/topbar.min.js></script>
+
+<script>
+    
+    topbar.config({
+        barColors: {
+            '0': 'rgba(255,  255, 255, 1)', 
+            '1.0': 'rgba(0, 149, 234,  1)' 
+        }
+    })
+	
+    document.addEventListener('pjax:send', () => {
+        
+        topbar.show();
+    })
+	
+    document.addEventListener('pjax:complete', () => {
+        
+        topbar.hide();
+    })
+</script>
+
 
 <script src=https://zihui7896.github.io/background/sakura.js></script>
 
@@ -739,12 +764,41 @@
         
         window.Stack.init();
     })
-
-</script>
-
-<script>
-
+async function renderKaTeX() {
+        
+        let katex = document.querySelector(".math-katex");
+        if (!katex) {
+            return;
+        }
+        
+        while (typeof renderMathInElement !== 'function') {
+            await delay(500);
+        }        
+        
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });
+    }
     
+    
+
+    function delay(time) {
+        return new Promise(resolve => {
+            setTimeout(resolve, time)
+        })
+    }
+
+    document.addEventListener('pjax:complete', () => {
+        renderKaTeX();
+    })
+	
+	
 
     function initScrollTop() {
         let rightSideBar = document.querySelector(".right-sidebar");
@@ -775,6 +829,7 @@
 
     initScrollTop();
 </script>
+
 
 
 <div id="aplayer"></div>
@@ -844,47 +899,47 @@ const ap = new APlayer({
 	
 	
     
-    const cssPath = "https://zihui7896.github.io/waifu/waifu.css"
-    const tipsJsonPath = "https://zihui7896.github.io/waifu/waifu-tips.json"
     
-    const live2d_path = "https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/";
+    
+    
+    
 
     
-    function loadExternalResource(url, type) {
-        return new Promise((resolve, reject) => {
-            let tag;
-            if (type === "css") {
-                tag = document.createElement("link");
-                tag.rel = "stylesheet";
-                tag.href = url;
-            }
-            else if (type === "js") {
-                tag = document.createElement("script");
-                tag.src = url;
-            }
-            if (tag) {
-                tag.onload = () => resolve(url);
-                tag.onerror = () => reject(url);
-                document.head.appendChild(tag);
-            }
-        });
-    }
-
     
-    if (screen.width >= 768) {
-        Promise.all([
-            loadExternalResource(cssPath, "css"),
-            loadExternalResource(live2d_path + "live2d.min.js", "js"),
-            loadExternalResource(live2d_path + "waifu-tips.js", "js")
-        ]).then(() => {
+        
             
-            initWidget({
-                waifuPath: tipsJsonPath,
-                cdnPath: "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/",
-                tools: ["hitokoto", "asteroids", "switch-model", "switch-texture", "photo", "info", "quit"]
-            });
-        });
-    }
+            
+                
+                
+                
+            
+            
+                
+                
+            
+            
+                
+                
+                
+            
+        
+    
+
+    
+    
+        
+            
+            
+            
+        
+            
+            
+                
+                
+                
+            
+        
+    
 
 </script>
 
